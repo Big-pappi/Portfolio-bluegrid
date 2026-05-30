@@ -52,22 +52,106 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(5,5,10,.85) 100%);pointer-events:none;z-index:8900;}
 
 /* ═══════════════════════════════════════════════
-   LOADER — CINEMATIC REVEAL
+   LOADER — CINEMATIC SLOT MACHINE
 ═══════════════════════════════════════════════ */
-#loader{position:fixed;inset:0;z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:var(--bg);overflow:hidden;}
-#loader.exit{animation:loaderExit .9s var(--ease-expo) forwards;}
-@keyframes loaderExit{
-  0%{clip-path:inset(0 0 0 0);}
-  100%{clip-path:inset(0 0 100% 0);pointer-events:none;opacity:0;}
+#loader{
+  position:fixed;inset:0;z-index:9500;
+  display:grid;grid-template-rows:1fr auto 1fr;
+  align-items:center;justify-items:center;
+  background:var(--bg);overflow:hidden;
 }
-.ld-counter{font-family:var(--font-display);font-size:clamp(80px,18vw,180px);line-height:1;letter-spacing:-.02em;color:transparent;-webkit-text-stroke:1px rgba(0,255,224,.2);position:relative;}
-.ld-counter span{position:absolute;top:0;left:0;right:0;text-align:center;color:var(--accent);-webkit-text-stroke:0;}
-.ld-line{width:1px;height:0;background:linear-gradient(to bottom,transparent,var(--accent),transparent);position:absolute;animation:ldLine 1.8s ease forwards .2s;}
-@keyframes ldLine{to{height:100vh;opacity:0;}}
-.ld-label{font-size:9px;letter-spacing:.5em;text-transform:uppercase;color:var(--muted);margin-top:20px;animation:ldFade .6s ease both .3s;}
-@keyframes ldFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.ld-progress{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent3),var(--accent),var(--accent2));animation:ldProgress 1.8s ease forwards;}
-@keyframes ldProgress{from{width:0;}to{width:100%;}}
+#loader.exit .ld-curtain-top{transform:translateY(-100%);}
+#loader.exit .ld-curtain-bot{transform:translateY(100%);}
+#loader.exit .ld-center{opacity:0;transform:scale(.88);}
+.ld-curtain-top,.ld-curtain-bot{
+  position:absolute;left:0;right:0;height:50%;background:var(--accent);
+  transition:transform 1s cubic-bezier(.87,0,.13,1);
+  z-index:2;
+}
+.ld-curtain-top{top:0;transform:translateY(-100%);}
+.ld-curtain-bot{bottom:0;transform:translateY(100%);}
+/* curtains START visible — slide IN, then slide OUT */
+#loader.ready .ld-curtain-top{transform:translateY(0);}
+#loader.ready .ld-curtain-bot{transform:translateY(0);}
+#loader.exit .ld-curtain-top{transform:translateY(-100%);}
+#loader.exit .ld-curtain-bot{transform:translateY(100%);}
+
+.ld-center{
+  grid-row:2;position:relative;z-index:3;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  transition:opacity .5s,transform .5s;
+}
+/* BIG DIGITS — slot machine style */
+.ld-digits{
+  display:flex;align-items:flex-start;justify-content:center;
+  height:clamp(100px,20vw,200px);overflow:hidden;
+  font-family:var(--font-display);
+  font-size:clamp(100px,20vw,200px);
+  line-height:1;
+  color:var(--bg);
+  position:relative;
+}
+.ld-digit-col{
+  position:relative;overflow:hidden;
+  height:clamp(100px,20vw,200px);
+  width:clamp(60px,12vw,120px);
+}
+.ld-digit-inner{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;flex-direction:column;
+  transition:transform .18s cubic-bezier(.23,1,.32,1);
+}
+.ld-digit-inner span{
+  height:clamp(100px,20vw,200px);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ld-pct-sym{
+  font-family:var(--font-display);
+  font-size:clamp(32px,7vw,70px);
+  color:var(--bg);
+  line-height:1;
+  margin-top:clamp(8px,2vw,20px);
+  align-self:flex-start;
+  padding-top:.12em;
+}
+
+/* The accent-coloured block behind the digits */
+.ld-box{
+  position:absolute;
+  background:var(--accent);
+  z-index:-1;
+  inset:-8px -12px;
+}
+.ld-meta{
+  display:flex;justify-content:space-between;align-items:center;
+  width:clamp(220px,40vw,400px);
+  margin-top:clamp(16px,3vw,28px);
+  border-top:1px solid rgba(0,0,0,.15);
+  padding-top:12px;
+}
+.ld-name-tag{
+  font-family:var(--font-display);
+  font-size:clamp(12px,2.5vw,18px);
+  letter-spacing:.18em;
+  color:var(--bg);
+}
+.ld-status{
+  font-size:8px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:rgba(0,0,0,.5);
+}
+/* hairline progress */
+.ld-bar-wrap{
+  position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:rgba(0,0,0,.12);overflow:hidden;
+}
+.ld-bar-fill{
+  height:100%;
+  background:rgba(0,0,0,.35);
+  width:0;transition:width .08s linear;
+}
 
 /* ═══════════════════════════════════════════════
    SCROLL PROGRESS
@@ -181,11 +265,7 @@ nav::before{content:'';position:absolute;inset:0;background:linear-gradient(to b
 .stat::after{content:'';position:absolute;top:50%;right:-16px;width:1px;height:40px;background:var(--border);transform:translateY(-50%);}
 .stat:last-child::after{display:none;}
 
-/* scroll indicator */
-.scroll-ind{position:absolute;bottom:40px;left:5vw;display:flex;align-items:center;gap:16px;font-size:8px;letter-spacing:.35em;text-transform:uppercase;color:var(--muted);opacity:0;animation:slideUp .9s var(--ease-expo) 3.4s forwards;}
-.scroll-wheel{width:22px;height:36px;border:1.5px solid rgba(255,255,255,.2);border-radius:12px;display:flex;justify-content:center;padding-top:6px;}
-.scroll-wheel::before{content:'';width:3px;height:6px;background:var(--accent);border-radius:2px;animation:scrollWheel 2s ease-in-out infinite;}
-@keyframes scrollWheel{0%,100%{transform:translateY(0);opacity:1;}60%{transform:translateY(10px);opacity:0;}}
+/* scroll indicator removed */
 
 @keyframes slideUp{from{opacity:0;transform:translateY(32px);}to{opacity:1;transform:translateY(0);}}
 
@@ -394,10 +474,37 @@ footer a:hover{color:var(--accent);}
 
 <!-- ── LOADER ── -->
 <div id="loader">
-  <div class="ld-line"></div>
-  <div class="ld-counter"><span id="ld-num">0</span></div>
-  <div class="ld-label">Philip Steven Chediel · Loading</div>
-  <div class="ld-progress"></div>
+  <div class="ld-curtain-top"></div>
+  <div class="ld-curtain-bot"></div>
+  <div class="ld-center">
+    <div class="ld-box"></div>
+    <div class="ld-digits">
+      <!-- hundreds -->
+      <div class="ld-digit-col" id="ldc2">
+        <div class="ld-digit-inner" id="ldci2">
+          <span>0</span><span>1</span>
+        </div>
+      </div>
+      <!-- tens -->
+      <div class="ld-digit-col" id="ldc1">
+        <div class="ld-digit-inner" id="ldci1">
+          <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+        </div>
+      </div>
+      <!-- units -->
+      <div class="ld-digit-col" id="ldc0">
+        <div class="ld-digit-inner" id="ldci0">
+          <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+        </div>
+      </div>
+      <div class="ld-pct-sym">%</div>
+    </div>
+    <div class="ld-meta">
+      <div class="ld-name-tag">Philip Steven Chediel</div>
+      <div class="ld-status" id="ld-status">Initialising</div>
+    </div>
+    <div class="ld-bar-wrap"><div class="ld-bar-fill" id="ld-bar"></div></div>
+  </div>
 </div>
 
 <!-- ── PAGE TRANSITION ── -->
@@ -486,7 +593,7 @@ footer a:hover{color:var(--accent);}
     </div>
   </div>
 
-  <div class="scroll-ind"><div class="scroll-wheel"></div>Scroll</div>
+
 </section>
 
 <!-- ── MARQUEE ── -->
@@ -835,7 +942,7 @@ footer a:hover{color:var(--accent);}
     <a href="https://x.com/" target="_blank" class="soc-link" title="X / Twitter">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>
     </a>
-    <a href="https://wa.me/" target="_blank" class="soc-link" title="WhatsApp">
+    <a href="https://wa.me/255620636893" target="_blank" class="soc-link" title="WhatsApp +255 620 636 893">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
     </a>
   </div>
@@ -851,19 +958,78 @@ footer a:hover{color:var(--accent);}
      JAVASCRIPT
 ═══════════════════════════════════════════ -->
 <script>
-/* ── LOADER ── */
+/* ── LOADER — SLOT MACHINE ── */
 (()=>{
-  const numEl = document.getElementById('ld-num');
-  let n = 0;
-  const iv = setInterval(()=>{
-    n += Math.random() * 22;
-    if(n >= 100){ n = 100; clearInterval(iv); }
-    numEl.textContent = Math.floor(n);
-  }, 60);
-  setTimeout(()=>{
-    document.getElementById('loader').classList.add('exit');
-    setTimeout(()=>document.getElementById('loader').remove(), 1000);
-  }, 1900);
+  const STARTED_YEAR = 2022; // coding start year — auto-updates
+  const loader = document.getElementById('loader');
+  const bar    = document.getElementById('ld-bar');
+  const status = document.getElementById('ld-status');
+  const ci0 = document.getElementById('ldci0'); // units
+  const ci1 = document.getElementById('ldci1'); // tens
+  const ci2 = document.getElementById('ldci2'); // hundreds
+  const H = parseFloat(getComputedStyle(document.documentElement)
+              .getPropertyValue('font-size')) * parseFloat(
+              getComputedStyle(ci0.parentElement).height || '140') || 140;
+
+  // build columns: 0-9 repeated so we can always scroll down
+  [ci0,ci1].forEach(col=>{
+    // already has 0-9, duplicate for smooth infinite feel
+    const html = col.innerHTML;
+    col.innerHTML = html + html;
+  });
+
+  function setDigit(col, digit){
+    const h = col.parentElement.offsetHeight || 140;
+    col.style.transform = `translateY(${-digit * h}px)`;
+  }
+
+  const statuses = ['Initialising','Loading assets','Building layout','Almost done','Ready'];
+  let statusIdx = 0;
+  let pct = 0;
+  let raf;
+
+  // initial — all at 0
+  setDigit(ci0, 0); setDigit(ci1, 0); setDigit(ci2, 0);
+
+  // Use faster easing for slot machine feel
+  ci0.style.transition = 'transform .14s cubic-bezier(.23,1,.32,1)';
+  ci1.style.transition = 'transform .22s cubic-bezier(.23,1,.32,1)';
+  ci2.style.transition = 'transform .30s cubic-bezier(.23,1,.32,1)';
+
+  function update(val){
+    val = Math.min(100, Math.max(0, Math.floor(val)));
+    const units   = val % 10;
+    const tens    = Math.floor(val / 10) % 10;
+    const hunds   = Math.floor(val / 100);
+    setDigit(ci0, units);
+    setDigit(ci1, tens);
+    setDigit(ci2, hunds);
+    bar.style.width = val + '%';
+    if(val >= 25 && statusIdx < 1){ status.textContent = statuses[1]; statusIdx=1; }
+    if(val >= 55 && statusIdx < 2){ status.textContent = statuses[2]; statusIdx=2; }
+    if(val >= 80 && statusIdx < 3){ status.textContent = statuses[3]; statusIdx=3; }
+    if(val >= 100){ status.textContent = statuses[4]; }
+  }
+
+  // Ease from 0 → 100 over ~2.2s with variable speed
+  const startTime = performance.now();
+  const DURATION  = 2200;
+  function tick(now){
+    const t = Math.min((now - startTime) / DURATION, 1);
+    // custom ease: slow start, fast mid, gentle end
+    const ease = t < .5 ? 2*t*t : -1+(4-2*t)*t;
+    pct = ease * 100;
+    update(pct);
+    if(t < 1){ raf = requestAnimationFrame(tick); }
+    else{
+      update(100);
+      setTimeout(()=>{
+        loader.classList.add('exit');
+        setTimeout(()=>loader.remove(), 1100);
+      }, 320);
+    }
+  }
+  requestAnimationFrame(tick);
 })();
 
 /* ── CUSTOM CURSOR ── */
@@ -923,7 +1089,7 @@ const barObs = new IntersectionObserver(entries=>{
 },{threshold:.3});
 document.querySelectorAll('.sk-bar-fill').forEach(b=>barObs.observe(b));
 
-/* ── COUNT UP ── */
+/* ── COUNT UP — years auto-calculated ── */
 function countUp(el, to, suf=''){
   let n=0; const step=()=>{
     n+=to/45;
@@ -932,11 +1098,13 @@ function countUp(el, to, suf=''){
     requestAnimationFrame(step);
   }; step();
 }
+const CODING_START = 2022;
+const yearsNow = new Date().getFullYear() - CODING_START;
 const statObs = new IntersectionObserver(entries=>{
   entries.forEach(e=>{
     if(e.isIntersecting){
       countUp(document.getElementById('sc1'),8,'+');
-      countUp(document.getElementById('sc2'),3,'+');
+      countUp(document.getElementById('sc2'), yearsNow, '+');
       statObs.disconnect();
     }
   });
